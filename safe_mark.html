@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>生成mark</title>
+</head>
+<link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.14/lib/theme-chalk/index.css">
+<script src="https://cdn.staticfile.net/vue/2.7.0/vue.js"></script>
+<script src="https://unpkg.com/element-ui@2.15.14/lib/index.js"></script>
+<body style="padding:5% 10%">
+<div id="app">
+    <el-form ref="form" :model="form" label-width="80px">
+
+        <el-form-item label="名称">
+            <el-input v-model="form.name"></el-input>
+        </el-form-item>
+        <el-form-item label="危害等级">
+            <el-radio v-model="form.radio" label="1">高危</el-radio>
+            <el-radio v-model="form.radio" label="2">中危</el-radio>
+            <el-radio v-model="form.radio" label="3">低危</el-radio>
+        </el-form-item>
+        <el-form-item label="介绍">
+            <el-input type="textarea" :autosize="{minRows:5,maxRows:10}" v-model="form.publicity"></el-input>
+        </el-form-item>
+        <el-form-item label="危害">
+            <el-input type="textarea" :autosize="{minRows:5,maxRows:10}" v-model="form.danger"></el-input>
+        </el-form-item>
+        <el-form-item label="数据来源">
+            <el-input type="input" v-model="form.link"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="onSubmit">生成并复制</el-button>
+            <el-button @click="clear">清空</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+</body>
+</html>
+<script>
+    var clickflag = true
+    new Vue({
+        el:"#app",
+        data:{
+            form: {
+                name: '',
+                desc: '',
+                danger:'',
+                link:'',
+                radio:0,
+                publicity:''
+            }
+        },
+        methods: {
+            clear(){
+                this.form = {
+                    name: '',
+                    desc: '',
+                    danger:'',
+                    link:'',
+                    radio:0,
+                    publicity:''
+                }
+            },
+            onSubmit() {
+                if(!this.form.name || !this.form.radio){
+                    this.$message("请填写必填项")
+                    return false;
+                }
+
+                let danger_str = ' '
+                if(this.form.radio == '1'){
+                    danger_str = ' :x:'
+                }else if(this.form.radio == '2'){
+                    danger_str = ' :warning:'
+                }
+
+                console.log(this.form)
+                let str = ''
+                str += '## '+this.form.name+danger_str
+                str += "\n"
+                if(this.form.publicity){
+                    str += "#### 作用\n"
+                    str += this.form.publicity+"\n"
+                }
+                if(this.form.danger){
+                    str += "#### 存在风险\n"
+                    str += this.form.danger+"\n"
+                }
+                str += "\n"
+                if(this.form.link){
+                    str += "[数据来源地址]("+this.form.link+")\n"
+                    str += "\n"
+                }
+
+
+                console.log(str)
+
+
+                if (clickflag) {
+                    clickflag = false;
+                    var sel = window.getSelection();
+                    var content1 = str.replace(/\n/g, '<br>');  // 将换行符替换为 <br>，但这可能不适用于所有情况
+                    // 更推荐使用 <pre> 标签
+                    var pre = document.createElement('pre');
+                    pre.textContent = str;  // 使用 textContent 而不是 innerHTML 以避免 HTML 注入
+                    document.body.appendChild(pre);
+                    var range = document.createRange();
+                    range.selectNodeContents(pre);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+
+                    // 使用 Clipboard API 复制
+                    navigator.clipboard.writeText(str).then(function() {
+                        console.log('复制成功');
+                    }, function(err) {
+                        console.error('复制失败:', err);
+                    });
+
+                    document.body.removeChild(pre);
+                    clickflag = true;
+                }
+            }
+        }
+    })
+</script>
